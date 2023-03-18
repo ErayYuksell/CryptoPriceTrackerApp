@@ -1,6 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import { FlatList, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import ListItem from "./src/components/ListItem";
+import Chart from "./src/components/Chart";
 import { SAMPLE_DATA } from "./src/assets/Data/SampleData";
 import React, { useMemo, useRef, useState } from "react";
 import {
@@ -23,11 +24,14 @@ const ListHeader = () => {
 };
 
 export default function App() {
+  const [selectedCoinData, setSelectedCoinData] = useState(null);
+
   const bottomSheetModalRef = useRef(null);
 
   const snapPoints = useMemo(() => ["50%"], []);
 
-  const openModal = () => {
+  const openModal = (item) => {
+    setSelectedCoinData(item);
     bottomSheetModalRef.current?.present();
   };
 
@@ -50,7 +54,7 @@ export default function App() {
                   item.price_change_percentage_7d_in_currency
                 }
                 logoUrl={item.image}
-                onPress={() => openModal()}
+                onPress={() => openModal(item)}
               />
             );
           }}
@@ -62,9 +66,18 @@ export default function App() {
         snapPoints={snapPoints}
         style={styles.bottomSheet}
       >
-        <View style={styles.contentContainer}>
-          <Text>Awesome 🎉</Text>
-        </View>
+      {selectedCoinData ? (
+          <Chart
+            currentPrice={selectedCoinData.current_price}
+            logoUrl={selectedCoinData.image}
+            name={selectedCoinData.name}
+            symbol={selectedCoinData.symbol}
+            priceChangePercentage7d={
+              selectedCoinData.price_change_percentage_7d_in_currency
+            }
+            sparkline={selectedCoinData.sparkline_in_7d.price}
+          />
+        ) : null}
       </BottomSheetModal>
     </BottomSheetModalProvider>
   );
