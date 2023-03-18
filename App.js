@@ -1,46 +1,72 @@
 import { StatusBar } from "expo-status-bar";
 import { FlatList, SafeAreaView, StyleSheet, Text, View } from "react-native";
-import ListItem from './src/components/ListItem';
+import ListItem from "./src/components/ListItem";
 import { SAMPLE_DATA } from "./src/assets/Data/SampleData";
+import React, { useMemo, useRef, useState } from "react";
+import {
+  BottomSheetModal,
+  BottomSheetModalProvider,
+} from "@gorhom/bottom-sheet";
+
+const ListHeader = () => {
+  //Coinlerde aşağı yukarı yaptığında başlık hareket etmediği için
+  // içine girip kayboluyordu bazı coinler bu yüzden başlık kısmını ayrı bir fonksiyon şeklinde oluşturup
+  // flatlistin içindeki ListHeaderComponent propsu içinde component olarak açarak bir bütün olmasını sağladık
+  return (
+    <>
+      <View style={styles.titleWrapper}>
+        <Text style={styles.largeTitle}>Markets</Text>
+      </View>
+      <View style={styles.divider} />
+    </>
+  );
+};
 
 export default function App() {
-  const ListHeader = () => {
-    //Coinlerde aşağı yukarı yaptığında başlık hareket etmediği için
-    // içine girip kayboluyordu bazı coinler bu yüzden başlık kısmını ayrı bir fonksiyon şeklinde oluşturup
-    // flatlistin içindeki ListHeaderComponent propsu içinde component olarak açarak bir bütün olmasını sağladık
-    return (
-      <>
-        <View style={styles.titleWrapper}>
-          <Text style={styles.largeTitle}>Markets</Text>
-        </View>
-        <View style={styles.divider} />
-      </>
-    );
+  const bottomSheetModalRef = useRef(null);
+
+  const snapPoints = useMemo(() => ["50%"], []);
+
+  const openModal = () => {
+    bottomSheetModalRef.current?.present();
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* SafeAreaView kullanmamızın nedeni ekranı yukarı çektiğimde başlık ve coinlerin yukardaki bara girmeleri ve */}
-      {/* kaybolmalarını engellemek için */}
-      <FlatList
-        ListHeaderComponent={<ListHeader />}
-        keyExtractor={(item) => item.id}
-        data={SAMPLE_DATA}
-        renderItem={({ item }) => {
-          return (
-            <ListItem
-              name={item.name}
-              symbol={item.symbol}
-              currentPrice={item.current_price}
-              priceChangePercentage7d={
-                item.price_change_percentage_7d_in_currency
-              }
-              logoUrl={item.image}
-            />
-          );
-        }}
-      />
-    </SafeAreaView>
+    <BottomSheetModalProvider>
+      <SafeAreaView style={styles.container}>
+        {/* SafeAreaView kullanmamızın nedeni ekranı yukarı çektiğimde başlık ve coinlerin yukardaki bara girmeleri ve */}
+        {/* kaybolmalarını engellemek için */}
+        <FlatList
+          ListHeaderComponent={<ListHeader />}
+          keyExtractor={(item) => item.id}
+          data={SAMPLE_DATA}
+          renderItem={({ item }) => {
+            return (
+              <ListItem
+                name={item.name}
+                symbol={item.symbol}
+                currentPrice={item.current_price}
+                priceChangePercentage7d={
+                  item.price_change_percentage_7d_in_currency
+                }
+                logoUrl={item.image}
+                onPress={() => openModal()}
+              />
+            );
+          }}
+        />
+      </SafeAreaView>
+      <BottomSheetModal
+        ref={bottomSheetModalRef}
+        index={0}
+        snapPoints={snapPoints}
+        style={styles.bottomSheet}
+      >
+        <View style={styles.contentContainer}>
+          <Text>Awesome 🎉</Text>
+        </View>
+      </BottomSheetModal>
+    </BottomSheetModalProvider>
   );
 }
 
@@ -62,5 +88,15 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     backgroundColor: "#A9AAA1",
     marginTop: 16,
+  },
+  bottomSheet: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: -4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
 });
